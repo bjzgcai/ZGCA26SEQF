@@ -14,3 +14,7 @@ Thumbs.db
 # Backup files
 *.bak
 *~
+
+# 本地成绩源文件，不上传
+PQ-id统计.csv
+导出20260902172035.xls

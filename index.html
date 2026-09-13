@@ -546,9 +546,9 @@
                 const sortedProjects = [...round.projects].sort((a, b) => b.score - a.score);
                 
                 const scores = sortedProjects.map(p => p.score);
-                const maxScore = Math.max(...scores);
-                const minScore = Math.min(...scores);
-                const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                const maxScore = scores.length ? Math.max(...scores) : 0;
+                const minScore = scores.length ? Math.min(...scores) : 0;
+                const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
                 
                 // 创建模块HTML
                 const section = document.createElement('div');
@@ -625,6 +625,17 @@
             renderChart(filteredStudents);
         }
         
+        function studentTitle(student) {
+            const name = student?.name ? `  ${student.name}` : '';
+            return `学号：${student.studentId}${name}`;
+        }
+        
+        function competitionRank(students, studentId) {
+            const target = students.find(s => s.studentId === studentId);
+            if (!target) return 0;
+            return students.filter(s => s.total > target.total).length + 1;
+        }
+        
         // ========== 渲染图表 ==========
         function renderChart(students) {
             const primaryColor = CONFIG.theme?.primaryColor || '#26c6da';
@@ -682,12 +693,10 @@
                         const cumulativeScore = params.value.toFixed(2);
                         const currentStageScore = student.stageScores[stageIndex];
                         
-                        const sortedByTotal = [...students].sort((a, b) => b.total - a.total);
-                        const totalRank = sortedByTotal.findIndex(s => s.studentId === student.studentId) + 1;
+                        const totalRank = competitionRank(students, student.studentId);
                         
                         let details = `<div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid ${primaryColor};">`;
-                        details += `<strong style="font-size: 16px; color: ${primaryColor};">学号：${student.studentId}</strong>`;
-                        if (student.name) details += `<br><span style="color: #666;">${student.name}</span>`;
+                        details += `<strong style="font-size: 16px; color: ${primaryColor};">${studentTitle(student)}</strong>`;
                         details += `</div>`;
                         
                         details += `<div style="margin-top: 10px;">`;
@@ -756,7 +765,9 @@
                     itemGap: 6,
                     formatter: function(name) {
                         const student = students.find(s => s.studentId === name);
-                        return student ? `${name} (${student.total.toFixed(1)})` : name;
+                        if (!student) return name;
+                        const label = student.name ? `${name} ${student.name}` : name;
+                        return `${label} (${student.total.toFixed(1)})`;
                     },
                     tooltip: {
                         show: true,
@@ -765,11 +776,10 @@
                             const student = students.find(s => s.studentId === studentId);
                             if (!student) return studentId;
                             
-                            const sortedByTotal = [...students].sort((a, b) => b.total - a.total);
-                            const totalRank = sortedByTotal.findIndex(s => s.studentId === studentId) + 1;
+                            const totalRank = competitionRank(students, studentId);
                             
                             let details = `<div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid ${primaryColor};">`;
-                            details += `<strong style="font-size: 16px; color: ${primaryColor};">学号：${studentId}</strong>`;
+                            details += `<strong style="font-size: 16px; color: ${primaryColor};">${studentTitle(student)}</strong>`;
                             details += `</div>`;
                             
                             details += `<div style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px;">`;
@@ -816,7 +826,7 @@
                 },
                 grid: {
                     left: '3%',
-                    right: '170px',
+                    right: '210px',
                     top: '50px',
                     bottom: '3%',
                     containLabel: true
