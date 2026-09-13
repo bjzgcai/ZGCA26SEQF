@@ -654,18 +654,19 @@
                 return;
             }
             
+            const axisLabels = ['', ...stageNames];
             const series = students.map((student) => ({
                 name: student.studentId,
                 type: 'line',
-                data: student.cumulative,
+                data: [0, ...student.cumulative],
                 smooth: true,
                 symbol: 'circle',
-                symbolSize: 8,
+                symbolSize: (value, params) => params.dataIndex === 0 ? 0 : 8,
                 lineStyle: { width: 2.5 },
                 emphasis: {
                     focus: 'series',
                     lineStyle: { width: 4 },
-                    symbolSize: 10
+                    symbolSize: (value, params) => params.dataIndex === 0 ? 0 : 10
                 }
             }));
 
@@ -687,8 +688,9 @@
                     confine: true,
                     position: [60, 60],
                     formatter: function(params) {
+                        if (params.dataIndex === 0) return '';
                         const student = students[params.seriesIndex];
-                        const stageIndex = params.dataIndex;
+                        const stageIndex = params.dataIndex - 1;
                         const stageName = stageNames[stageIndex];
                         const cumulativeScore = params.value.toFixed(2);
                         const currentStageScore = student.stageScores[stageIndex];
@@ -834,13 +836,16 @@
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: stageNames,
+                    data: axisLabels,
                     axisLine: { lineStyle: { color: '#999' } },
                     axisLabel: { 
                         fontSize: 11, 
                         color: '#666',
                         rotate: stageNames.length > 15 ? 45 : 0,
-                        formatter: value => value.length > 10 ? value.substring(0, 9) + '…' : value
+                        formatter: value => {
+                            if (!value) return '';
+                            return value.length > 10 ? value.substring(0, 9) + '…' : value;
+                        }
                     }
                 },
                 yAxis: {
