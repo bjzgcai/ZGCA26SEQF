@@ -336,7 +336,7 @@
         // ========== 加载CSV文件 ==========
         async function loadCSV(filePath, errorMsg) {
             try {
-                const response = await fetch(filePath);
+                const response = await fetch(`${filePath}?t=${Date.now()}`, { cache: 'no-store' });
                 if (!response.ok) {
                     throw new Error(`无法加载: ${filePath}`);
                 }
