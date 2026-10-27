@@ -77,6 +77,8 @@ const CONFIG = {
     // ========== 投资配置 ==========
     investment: {
         nameColumn: "项目名称",           // 项目名称列
+        membersColumn: "项目成员",        // 成员信息列（可选）
+        mentorColumn: "指导工程师",       // 指导工程师列（可选）
         decimalColumns: ["评委评价"]      // 需要显示小数的列
     },
     

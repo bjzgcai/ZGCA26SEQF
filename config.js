@@ -37,6 +37,8 @@ const CONFIG = {
     investment: {
         // 第一列的列名（项目名称列）
         nameColumn: "项目名称",
+        membersColumn: "项目成员",
+        mentorColumn: "指导工程师",
         
         // 小数列（这些列的分数显示保留2位小数）
         decimalColumns: ["Beta阶段评委评价"]

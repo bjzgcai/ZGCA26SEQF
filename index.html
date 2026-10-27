@@ -148,17 +148,17 @@
             border-left-color: var(--primary-hover, #00acc1);
         }
         
-        .investment-card:nth-child(1) {
+        .investment-card.rank-1 {
             border-left-color: var(--gold-color, #ffd700);
             background: linear-gradient(135deg, #fffef7 0%, #ffffff 100%);
         }
         
-        .investment-card:nth-child(2) {
+        .investment-card.rank-2 {
             border-left-color: var(--silver-color, #c0c0c0);
             background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
         }
         
-        .investment-card:nth-child(3) {
+        .investment-card.rank-3 {
             border-left-color: var(--bronze-color, #cd7f32);
             background: linear-gradient(135deg, #fef9f5 0%, #ffffff 100%);
         }
@@ -178,6 +178,14 @@
             justify-content: space-between;
         }
         
+        .project-members, .project-mentor {
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #555;
+            overflow-wrap: anywhere;
+        }
+
         .score-value {
             font-size: 28px;
             font-weight: 700;
@@ -491,6 +499,8 @@
             
             const investConfig = CONFIG.investment || {};
             const nameColumn = investConfig.nameColumn || '项目名称';
+            const membersColumn = investConfig.membersColumn || '项目成员';
+            const mentorColumn = investConfig.mentorColumn || '指导工程师';
             const decimalColumns = new Set(investConfig.decimalColumns || []);
             
             const nameIdx = headers.indexOf(nameColumn);
@@ -499,10 +509,12 @@
                 return null;
             }
             
-            // 每个非名称列都是一个投资轮次
+            const membersIdx = headers.indexOf(membersColumn);
+            const mentorIdx = headers.indexOf(mentorColumn);
+            // 项目人员信息不作为投资轮次，空白得分表示该轮尚未录入。
             const rounds = [];
             headers.forEach((header, idx) => {
-                if (idx !== nameIdx) {
+                if (idx !== nameIdx && idx !== membersIdx && idx !== mentorIdx) {
                     rounds.push({
                         title: header,
                         colIdx: idx,
@@ -521,15 +533,20 @@
                 if (!projectName) continue;
                 
                 rounds.forEach(round => {
-                    const score = parseFloat(values[round.colIdx]) || 0;
+                    const rawScore = values[round.colIdx]?.trim();
+                    if (!rawScore) return;
+                    const score = Number(rawScore);
+                    if (!Number.isFinite(score)) return;
                     round.projects.push({
                         name: projectName,
-                        score: score
+                        score: score,
+                        members: membersIdx >= 0 ? values[membersIdx]?.trim() || '' : '',
+                        mentor: mentorIdx >= 0 ? values[mentorIdx]?.trim() || '' : ''
                     });
                 });
             }
             
-            return rounds;
+            return rounds.filter(round => round.projects.length > 0);
         }
         
         // ========== 渲染投资模块 ==========
@@ -580,10 +597,11 @@
                     
                     const percentage = maxScore > 0 ? (project.score / maxScore) * 100 : 0;
                     
-                    let rankBadge = '';
-                    if (index === 0) rankBadge = `<span style="color: ${goldColor}; font-weight: bold;">TOP1🥇</span>`;
-                    else if (index === 1) rankBadge = `<span style="color: ${silverColor}; font-weight: bold;">TOP2🥈</span>`;
-                    else if (index === 2) rankBadge = `<span style="color: ${bronzeColor}; font-weight: bold;">TOP3🥉</span>`;
+                    const rank = sortedProjects.filter(p => p.score > project.score).length + 1;
+                    card.classList.add(`rank-${rank}`);
+                    const tied = sortedProjects.filter(p => p.score === project.score).length > 1;
+                    const rankColor = rank === 1 ? goldColor : rank === 2 ? silverColor : rank === 3 ? bronzeColor : '#666';
+                    const rankBadge = `<span style="color: ${rankColor}; font-weight: bold;">${tied ? '并列' : ''}第${rank}名 </span>`;
                     
                     const displayScore = round.isDecimal ? project.score.toFixed(2) : project.score;
                     
@@ -596,6 +614,19 @@
                             </div>
                         </div>
                     `;
+
+                    if (project.members) {
+                        const members = document.createElement('p');
+                        members.className = 'project-members';
+                        members.textContent = `项目成员：${project.members}`;
+                        card.appendChild(members);
+                    }
+                    if (project.mentor) {
+                        const mentor = document.createElement('p');
+                        mentor.className = 'project-mentor';
+                        mentor.textContent = `指导工程师：${project.mentor}`;
+                        card.appendChild(mentor);
+                    }
                     
                     grid.appendChild(card);
                 });
