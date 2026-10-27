@@ -186,6 +186,18 @@
             overflow-wrap: anywhere;
         }
 
+        .project-member {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+        }
+
+        .project-member a {
+            color: #087f8c;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
         .score-value {
             font-size: 28px;
             font-weight: 700;
@@ -616,9 +628,31 @@
                     `;
 
                     if (project.members) {
-                        const members = document.createElement('p');
+                        const members = document.createElement('div');
                         members.className = 'project-members';
-                        members.textContent = `项目成员：${project.members}`;
+                        const label = document.createElement('div');
+                        label.textContent = '项目成员：';
+                        members.appendChild(label);
+                        project.members.split('、').forEach(entry => {
+                            const match = entry.trim().match(/^(.+?)（(https:\/\/gitee\.com\/[^\s）]+)）$/);
+                            const name = match ? match[1] : entry.trim().replace(/（\d+）$/, '');
+                            const row = document.createElement('div');
+                            row.className = 'project-member';
+                            const nameLabel = document.createElement('span');
+                            nameLabel.textContent = name;
+                            row.appendChild(nameLabel);
+                            if (match) {
+                                const link = document.createElement('a');
+                                link.href = match[2];
+                                link.textContent = 'Gitee 仓库';
+                                link.title = match[2];
+                                link.setAttribute('aria-label', `${name}的 Gitee 仓库`);
+                                link.target = '_blank';
+                                link.rel = 'noopener noreferrer';
+                                row.appendChild(link);
+                            }
+                            members.appendChild(row);
+                        });
                         card.appendChild(members);
                     }
                     if (project.mentor) {
