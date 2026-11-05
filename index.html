@@ -118,6 +118,18 @@
             font-weight: 600;
         }
         
+        .project-burndown-link {
+            text-align: center;
+            margin: -8px 0 20px;
+            font-size: 16px;
+        }
+
+        .project-burndown-link a {
+            color: #087f8c;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
         .investment-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -588,6 +600,7 @@
                 
                 section.innerHTML = `
                     <h2>${round.title}</h2>
+                    ${round.title === '项目投资得分（第一轮）' ? '<div class="project-burndown-link"><a href="https://scj980128.github.io/burndown-board/" target="_blank" rel="noopener noreferrer">项目燃尽图</a></div>' : ''}
                     <div class="stats">
                         <div class="stat-card"><h3>项目总数</h3><p>${sortedProjects.length}</p></div>
                         <div class="stat-card"><h3>最高分</h3><p>${formatScore(maxScore)}</p></div>
