@@ -39,6 +39,15 @@ const CONFIG = {
         nameColumn: "项目名称",
         membersColumn: "项目成员",
         mentorColumn: "指导工程师",
+        teamRepositories: {
+            "桌面宠物团团": "https://gitee.com/rainy_C/software-tuantuan-demo-plan",
+            "智能码表": "https://gitee.com/fallrainme/modern-software-engineering",
+            "家庭信息记忆管家": "https://gitee.com/littlewells/Modern-Software-Engineering",
+            "桌面机械臂": "https://gitee.com/czl7642/modern-software-engineering/tree/project/",
+            "生活感受器": "https://gitee.com/what2/zgca-here-team",
+            "桌面宠物奇宝Kitbot": "https://gitee.com/zgca-kitbot-team/kitbot",
+            "MicroDuck桌面助手": "https://gitee.com/utopia416/modern_software_engineering"
+        },
         
         // 小数列（这些列的分数显示保留2位小数）
         decimalColumns: ["Beta阶段评委评价"]

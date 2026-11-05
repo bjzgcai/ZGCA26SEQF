@@ -190,7 +190,7 @@
             justify-content: space-between;
         }
         
-        .project-members, .project-mentor {
+        .project-members, .project-mentor, .project-team-repository {
             margin-top: 12px;
             font-size: 14px;
             line-height: 1.8;
@@ -204,7 +204,7 @@
             gap: 4px 12px;
         }
 
-        .project-member a {
+        .project-member a, .project-team-repository a {
             color: #087f8c;
             text-decoration: underline;
             text-underline-offset: 3px;
@@ -639,6 +639,21 @@
                             </div>
                         </div>
                     `;
+
+                    const teamRepository = CONFIG.investment?.teamRepositories?.[project.name];
+                    if (teamRepository) {
+                        const repository = document.createElement('p');
+                        repository.className = 'project-team-repository';
+                        const link = document.createElement('a');
+                        link.href = teamRepository;
+                        link.textContent = '团队 Gitee 仓库';
+                        link.title = teamRepository;
+                        link.setAttribute('aria-label', `${project.name}的团队 Gitee 仓库`);
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        repository.appendChild(link);
+                        card.appendChild(repository);
+                    }
 
                     if (project.members) {
                         const members = document.createElement('div');
