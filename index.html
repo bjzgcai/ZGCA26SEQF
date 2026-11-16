@@ -190,7 +190,7 @@
             justify-content: space-between;
         }
         
-        .project-members, .project-mentor, .project-team-repository {
+        .project-members, .project-mentor, .project-team-repository, .project-review-pdf {
             margin-top: 12px;
             font-size: 14px;
             line-height: 1.8;
@@ -204,7 +204,7 @@
             gap: 4px 12px;
         }
 
-        .project-member a, .project-team-repository a {
+        .project-member a, .project-team-repository a, .project-review-pdf a {
             color: #087f8c;
             text-decoration: underline;
             text-underline-offset: 3px;
@@ -594,6 +594,7 @@
                 // 创建模块HTML
                 const section = document.createElement('div');
                 section.className = 'container investment-section';
+                if (round.title === 'Alpha Review') section.id = 'alpha-review';
                 section.style.animationDelay = `${roundIdx * 0.1}s`;
                 
                 const formatScore = (val) => round.isDecimal ? val.toFixed(2) : val;
@@ -639,6 +640,20 @@
                             </div>
                         </div>
                     `;
+
+                    const pdf = round.title === 'Alpha Review' && CONFIG.investment?.alphaReviewPdfs?.[project.name];
+                    if (pdf) {
+                        const preview = document.createElement('p');
+                        preview.className = 'project-review-pdf';
+                        const link = document.createElement('a');
+                        link.href = pdf;
+                        link.textContent = '预览汇报 PDF';
+                        link.setAttribute('aria-label', `预览${project.name}的 Alpha Review 汇报 PDF（新标签页）`);
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        preview.appendChild(link);
+                        card.appendChild(preview);
+                    }
 
                     const teamRepository = CONFIG.investment?.teamRepositories?.[project.name];
                     if (teamRepository) {

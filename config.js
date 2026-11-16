@@ -39,6 +39,14 @@ const CONFIG = {
         nameColumn: "项目名称",
         membersColumn: "项目成员",
         mentorColumn: "指导工程师",
+        alphaReviewPdfs: {
+            "桌面宠物团团": "alpha-review-pdf/tuantuan.pdf",
+            "智能码表": "alpha-review-pdf/smart-meter.pdf",
+            "家庭信息记忆管家": "alpha-review-pdf/family-memory.pdf",
+            "桌面机械臂": "alpha-review-pdf/desktop-arm.pdf",
+            "桌面宠物奇宝Kitbot": "alpha-review-pdf/kitbot.pdf",
+            "MicroDuck桌面助手": "alpha-review-pdf/microduck.pdf"
+        },
         teamRepositories: {
             "桌面宠物团团": "https://gitee.com/rainy_C/software-tuantuan-demo-plan",
             "智能码表": "https://gitee.com/fallrainme/modern-software-engineering",
