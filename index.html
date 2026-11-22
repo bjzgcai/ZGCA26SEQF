@@ -212,29 +212,68 @@
 
         .project-feedback {
             margin-top: 16px;
-            padding-top: 14px;
+            padding-top: 10px;
             border-top: 1px solid #dce5e7;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .feedback-trigger {
+            border: 0;
+            padding: 6px 0;
+            background: none;
+            font: inherit;
+            line-height: 1.8;
+            color: #265c64;
+            cursor: pointer;
+            text-decoration: underline dotted #91b8bd;
+            text-underline-offset: 5px;
+            transition: color 0.15s;
+        }
+
+        .feedback-trigger:hover, .feedback-trigger[aria-expanded="true"] {
+            color: #087f8c;
+            text-decoration-style: solid;
+            background: none;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .feedback-trigger:focus-visible {
+            outline: 2px solid #087f8c;
+            outline-offset: 4px;
+            border-radius: 2px;
+        }
+
+        .feedback-separator { color: #b5c6c9; }
+
+        .feedback-popover {
+            position: fixed;
+            z-index: 1000;
+            box-sizing: border-box;
+            width: min(380px, calc(100vw - 24px));
+            max-height: min(440px, calc(100dvh - 24px));
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 18px 20px;
+            border: 1px solid #dce5e7;
+            border-top: 3px solid #087f8c;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 8px 32px #23444c30;
+            color: #444;
             font-size: 14px;
             line-height: 1.8;
-            color: #444;
             overflow-wrap: anywhere;
         }
 
-        .project-feedback h4 {
-            margin: 0 0 10px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #265c64;
-        }
-
-        .project-feedback h5 {
-            margin: 12px 0 4px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .project-feedback p {
+        .feedback-popover[hidden] { display: none; }
+        .feedback-popover-project { margin-bottom: 4px; color: #777; font-size: 12px; }
+        .feedback-popover h4 { margin: 0 0 10px; color: #265c64; font-size: 16px; }
+        .feedback-popover p {
             margin: 0;
         }
 
@@ -735,27 +774,25 @@
 
                     const feedback = round.title === 'Alpha Review' && CONFIG.investment?.alphaReviewFeedback?.[project.name];
                     if (feedback) {
-                        const review = document.createElement('section');
-                        review.className = 'project-feedback project-review-opinions';
-                        const reviewTitle = document.createElement('h4');
-                        reviewTitle.textContent = '评审意见';
-                        review.appendChild(reviewTitle);
-
-                        for (const [label, opinion] of [['优点', feedback.strengths], ['缺点', feedback.weaknesses]]) {
-                            const labelHeading = document.createElement('h5');
-                            labelHeading.textContent = label;
-                            review.appendChild(labelHeading);
-                            review.appendChild(createFeedbackParagraph(opinion));
+                        const review = document.createElement('div');
+                        review.className = 'project-feedback';
+                        review.setAttribute('role', 'group');
+                        review.setAttribute('aria-label', `${project.name}评审反馈`);
+                        for (const [label, opinion] of [
+                            ['优点', feedback.strengths],
+                            ['缺点', feedback.weaknesses],
+                            ['改进建议', feedback.improvements]
+                        ]) {
+                            if (review.childElementCount) {
+                                const separator = document.createElement('span');
+                                separator.className = 'feedback-separator';
+                                separator.textContent = '/';
+                                separator.setAttribute('aria-hidden', 'true');
+                                review.appendChild(separator);
+                            }
+                            review.appendChild(createFeedbackTrigger(project.name, label, opinion));
                         }
                         card.appendChild(review);
-
-                        const improvements = document.createElement('section');
-                        improvements.className = 'project-feedback project-beta-suggestions';
-                        const improvementsTitle = document.createElement('h4');
-                        improvementsTitle.textContent = 'Beta阶段改进建议';
-                        improvements.appendChild(improvementsTitle);
-                        improvements.appendChild(createFeedbackParagraph(feedback.improvements));
-                        card.appendChild(improvements);
                     }
                     
                     grid.appendChild(card);
@@ -770,6 +807,118 @@
             paragraph.appendChild(summary);
             paragraph.appendChild(document.createTextNode(` ${opinion.detail}`));
             return paragraph;
+        }
+
+        // 浮层放在 body 下，避免被项目卡片的动画和布局裁切。
+        let feedbackPopover;
+        let activeFeedbackTrigger = null;
+        let feedbackPinned = false;
+        let feedbackCloseTimer;
+
+        function hideFeedbackPopover() {
+            clearTimeout(feedbackCloseTimer);
+            if (!activeFeedbackTrigger) return;
+            activeFeedbackTrigger.setAttribute('aria-expanded', 'false');
+            activeFeedbackTrigger.removeAttribute('aria-describedby');
+            activeFeedbackTrigger = null;
+            feedbackPinned = false;
+            feedbackPopover.hidden = true;
+        }
+
+        function positionFeedbackPopover() {
+            if (!activeFeedbackTrigger) return;
+            const anchor = activeFeedbackTrigger.getBoundingClientRect();
+            const margin = 12;
+            const gap = 10;
+            const width = document.documentElement.clientWidth;
+            const height = window.innerHeight;
+            if (anchor.bottom < 0 || anchor.top > height) {
+                hideFeedbackPopover();
+                return;
+            }
+            const popup = feedbackPopover.getBoundingClientRect();
+            const left = Math.max(margin, Math.min(anchor.left, width - popup.width - margin));
+            const below = anchor.bottom + gap;
+            const preferredTop = below + popup.height <= height - margin ? below : anchor.top - popup.height - gap;
+            const top = Math.max(margin, Math.min(preferredTop, height - popup.height - margin));
+            feedbackPopover.style.left = `${left}px`;
+            feedbackPopover.style.top = `${top}px`;
+        }
+
+        function scheduleFeedbackClose() {
+            clearTimeout(feedbackCloseTimer);
+            feedbackCloseTimer = setTimeout(() => {
+                if (!feedbackPinned && document.activeElement !== activeFeedbackTrigger && !feedbackPopover.matches(':hover')) {
+                    hideFeedbackPopover();
+                }
+            }, 180);
+        }
+
+        function createFeedbackTrigger(projectName, label, opinion) {
+            if (!feedbackPopover) {
+                feedbackPopover = document.createElement('div');
+                feedbackPopover.id = 'feedback-popover';
+                feedbackPopover.className = 'feedback-popover';
+                feedbackPopover.setAttribute('role', 'tooltip');
+                feedbackPopover.hidden = true;
+                document.body.appendChild(feedbackPopover);
+                feedbackPopover.addEventListener('pointerenter', () => clearTimeout(feedbackCloseTimer));
+                feedbackPopover.addEventListener('pointerleave', scheduleFeedbackClose);
+                document.addEventListener('pointerdown', event => {
+                    if (activeFeedbackTrigger && !activeFeedbackTrigger.contains(event.target) && !feedbackPopover.contains(event.target)) {
+                        hideFeedbackPopover();
+                    }
+                });
+                document.addEventListener('keydown', event => {
+                    if (event.key === 'Escape') hideFeedbackPopover();
+                });
+                window.addEventListener('resize', positionFeedbackPopover);
+                window.addEventListener('scroll', positionFeedbackPopover, true);
+            }
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'feedback-trigger';
+            trigger.setAttribute('aria-expanded', 'false');
+            trigger.setAttribute('aria-controls', feedbackPopover.id);
+            const text = document.createElement('strong');
+            text.textContent = label;
+            trigger.appendChild(text);
+
+            const show = () => {
+                clearTimeout(feedbackCloseTimer);
+                if (activeFeedbackTrigger === trigger) return;
+                hideFeedbackPopover();
+                const project = document.createElement('div');
+                project.className = 'feedback-popover-project';
+                project.textContent = projectName;
+                const heading = document.createElement('h4');
+                heading.textContent = label === '改进建议' ? 'Beta 阶段改进建议' : label;
+                feedbackPopover.replaceChildren(project, heading, createFeedbackParagraph(opinion));
+                feedbackPopover.scrollTop = 0;
+                feedbackPopover.hidden = false;
+                activeFeedbackTrigger = trigger;
+                trigger.setAttribute('aria-expanded', 'true');
+                trigger.setAttribute('aria-describedby', feedbackPopover.id);
+                positionFeedbackPopover();
+            };
+            trigger.addEventListener('pointerenter', event => {
+                if (event.pointerType !== 'touch') show();
+            });
+            trigger.addEventListener('pointerleave', scheduleFeedbackClose);
+            trigger.addEventListener('focus', show);
+            trigger.addEventListener('blur', () => {
+                feedbackPinned = false;
+                scheduleFeedbackClose();
+            });
+            trigger.addEventListener('click', () => {
+                if (activeFeedbackTrigger === trigger && feedbackPinned) hideFeedbackPopover();
+                else {
+                    show();
+                    feedbackPinned = true;
+                }
+            });
+            return trigger;
         }
 
         // ========== 更新使用说明 ==========
