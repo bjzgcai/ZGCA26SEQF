@@ -210,6 +210,34 @@
             text-underline-offset: 3px;
         }
 
+        .project-feedback {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #dce5e7;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #444;
+            overflow-wrap: anywhere;
+        }
+
+        .project-feedback h4 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #265c64;
+        }
+
+        .project-feedback h5 {
+            margin: 12px 0 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .project-feedback p {
+            margin: 0;
+        }
+
         .score-value {
             font-size: 28px;
             font-weight: 700;
@@ -704,12 +732,46 @@
                         mentor.textContent = `指导工程师：${project.mentor}`;
                         card.appendChild(mentor);
                     }
+
+                    const feedback = round.title === 'Alpha Review' && CONFIG.investment?.alphaReviewFeedback?.[project.name];
+                    if (feedback) {
+                        const review = document.createElement('section');
+                        review.className = 'project-feedback project-review-opinions';
+                        const reviewTitle = document.createElement('h4');
+                        reviewTitle.textContent = '评审意见';
+                        review.appendChild(reviewTitle);
+
+                        for (const [label, opinion] of [['优点', feedback.strengths], ['缺点', feedback.weaknesses]]) {
+                            const labelHeading = document.createElement('h5');
+                            labelHeading.textContent = label;
+                            review.appendChild(labelHeading);
+                            review.appendChild(createFeedbackParagraph(opinion));
+                        }
+                        card.appendChild(review);
+
+                        const improvements = document.createElement('section');
+                        improvements.className = 'project-feedback project-beta-suggestions';
+                        const improvementsTitle = document.createElement('h4');
+                        improvementsTitle.textContent = 'Beta阶段改进建议';
+                        improvements.appendChild(improvementsTitle);
+                        improvements.appendChild(createFeedbackParagraph(feedback.improvements));
+                        card.appendChild(improvements);
+                    }
                     
                     grid.appendChild(card);
                 });
             });
         }
         
+        function createFeedbackParagraph(opinion) {
+            const paragraph = document.createElement('p');
+            const summary = document.createElement('strong');
+            summary.textContent = opinion.summary;
+            paragraph.appendChild(summary);
+            paragraph.appendChild(document.createTextNode(` ${opinion.detail}`));
+            return paragraph;
+        }
+
         // ========== 更新使用说明 ==========
         function updateUsageInfo() {
             const stagesText = stageNames.join(' → ');
