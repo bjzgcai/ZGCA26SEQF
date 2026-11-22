@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">千帆竞发图</title>
-    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-    <script src="config.js"></script>
+    <link rel="preload" href="assets/vendor/echarts-5.4.3.min.js" as="script">
+    <script src="config.js" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -435,7 +435,8 @@
         // ========== 加载CSV文件 ==========
         async function loadCSV(filePath, errorMsg) {
             try {
-                const response = await fetch(`${filePath}?t=${Date.now()}`, { cache: 'no-store' });
+                // 保留缓存副本，每次校验更新；数据未变时可使用 304 响应。
+                const response = await fetch(filePath, { cache: 'no-cache' });
                 if (!response.ok) {
                     throw new Error(`无法加载: ${filePath}`);
                 }
@@ -941,7 +942,7 @@
                 }
             });
             
-            renderChart(filteredStudents);
+            applyFilter();
         }
         
         function studentTitle(student) {
@@ -957,6 +958,7 @@
         
         // ========== 渲染图表 ==========
         function renderChart(students) {
+            if (!myChart) return;
             const primaryColor = CONFIG.theme?.primaryColor || '#26c6da';
             
             if (students.length === 0) {
@@ -1260,31 +1262,41 @@
         });
         
         // ========== 初始化 ==========
+        function loadChartLibrary() {
+            if (window.echarts) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'assets/vendor/echarts-5.4.3.min.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('图表组件加载失败，请刷新页面重试。'));
+                document.head.appendChild(script);
+            });
+        }
+
         async function init() {
             applyTheme();
             applyBasicConfig();
-            
-            try {
-                // 并行加载数据
-                const [students, investRounds] = await Promise.all([
-                    loadStudentData(),
-                    loadInvestmentData()
-                ]);
-                
+
+            // 项目卡片独立加载，不必等待图表库或学生成绩请求。
+            const investmentReady = loadInvestmentData().then(investRounds => {
+                if (investRounds) renderInvestmentModules(investRounds);
+            }).catch(error => console.error('投资模块初始化失败:', error));
+
+            const chartReady = Promise.all([loadStudentData(), loadChartLibrary()]).then(([students]) => {
                 allStudents = students;
                 allStudents.sort((a, b) => b.total - a.total);
                 filteredStudents = allStudents;
-                
                 initChart();
-                
-                // 渲染投资模块
-                if (investRounds) {
-                    renderInvestmentModules(investRounds);
+            }).catch(error => {
+                console.error('图表初始化失败:', error);
+                const loading = document.getElementById('loadingMsg');
+                if (loading && !loading.querySelector('.error')) {
+                    loading.textContent = '图表加载失败，请刷新页面重试。';
                 }
-                
-            } catch (error) {
-                console.error('初始化失败:', error);
-            }
+            });
+
+            await Promise.all([investmentReady, chartReady]);
         }
         
         window.addEventListener('DOMContentLoaded', init);
