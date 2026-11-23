@@ -68,7 +68,7 @@ const CONFIG = {
                     "detail": "综合建议：在实际骑行环境下展示连续使用、风噪下语音交互和服务稳定性，记录可复查的结果；优化体积、安装位置与屏幕可读性之间的平衡；用具体任务对比手机、手表和现有码表，讲清哪项核心功能能减少骑行操作或提升信息获取效率，再完善手机联动、推荐等功能。下一次汇报应压缩故事铺垫，把实测和差异化证据放到前面。"
                 }
             },
-            "家庭信息记忆管家": {
+            "桌面伙伴-忆友": {
                 "strengths": {
                     "summary": "记忆与陪伴方向能引起部分评委共鸣，实体外观呈现较受认可。",
                     "detail": "有评委认为场景丰富、目标明确，认可“记住家里东西”的用途；也有人认为需求和痛点准确。外观好看、实物与效果图一致性高等评价在不同表中出现，说明产品具象化和实体呈现有一定基础。但目标是否明确存在明显分歧，不能将这些正面感受写成一致认可。"
@@ -143,7 +143,7 @@ const CONFIG = {
             "生活感受器": "alpha-review-pdf/here.pdf",
             "桌面宠物团团": "alpha-review-pdf/tuantuan.pdf",
             "智能码表": "alpha-review-pdf/smart-meter.pdf",
-            "家庭信息记忆管家": "alpha-review-pdf/family-memory.pdf",
+            "桌面伙伴-忆友": "alpha-review-pdf/family-memory.pdf",
             "桌面机械臂": "alpha-review-pdf/desktop-arm.pdf",
             "桌面宠物奇宝Kitbot": "alpha-review-pdf/kitbot.pdf",
             "MicroDuck桌面助手": "alpha-review-pdf/microduck.pdf"
@@ -151,7 +151,7 @@ const CONFIG = {
         teamRepositories: {
             "桌面宠物团团": "https://gitee.com/rainy_C/software-tuantuan-demo-plan",
             "智能码表": "https://gitee.com/fallrainme/modern-software-engineering",
-            "家庭信息记忆管家": "https://gitee.com/littlewells/Modern-Software-Engineering",
+            "桌面伙伴-忆友": "https://gitee.com/littlewells/Modern-Software-Engineering",
             "桌面机械臂": "https://gitee.com/czl7642/modern-software-engineering/tree/project/",
             "生活感受器": "https://gitee.com/what2/zgca-here-team",
             "桌面宠物奇宝Kitbot": "https://gitee.com/zgca-kitbot-team/kitbot",
