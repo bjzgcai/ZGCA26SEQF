@@ -949,6 +949,10 @@
             const name = student?.name ? `  ${student.name}` : '';
             return `学号：${student.studentId}${name}`;
         }
+
+        function formatStageScore(score, digits) {
+            return (score < 0 ? '' : '+') + score.toFixed(digits);
+        }
         
         function competitionRank(students, studentId) {
             const target = students.find(s => s.studentId === studentId);
@@ -1024,7 +1028,7 @@
                         
                         details += `<div style="margin-top: 10px;">`;
                         details += `<div style="display: flex; justify-content: space-between;"><span>当前阶段：</span><strong>${stageName}</strong></div>`;
-                        details += `<div style="display: flex; justify-content: space-between;"><span>本阶段得分：</span><strong style="color: #ff6b6b;">+${currentStageScore.toFixed(2)}</strong></div>`;
+                        details += `<div style="display: flex; justify-content: space-between;"><span>本阶段得分：</span><strong style="color: #ff6b6b;">${formatStageScore(currentStageScore, 2)}</strong></div>`;
                         details += `<div style="display: flex; justify-content: space-between;"><span>累计到此：</span><strong style="color: ${primaryColor}; font-size: 16px;">${cumulativeScore}</strong></div>`;
                         details += `</div>`;
                         
@@ -1051,7 +1055,7 @@
                                 
                                 details += `<tr style="${rowStyle}">`;
                                 details += `<td style="padding: 1px 2px; max-width: 60px; overflow: hidden;" title="${stageNames[idx]}">${shortName}</td>`;
-                                details += `<td style="text-align: right; padding: 1px 2px;">+${student.stageScores[idx].toFixed(1)}</td>`;
+                                details += `<td style="text-align: right; padding: 1px 2px;">${formatStageScore(student.stageScores[idx], 1)}</td>`;
                                 details += `</tr>`;
                             }
                             details += `</table>`;
@@ -1122,7 +1126,7 @@
                                     
                                     details += `<tr style="padding: 2px;">`;
                                     details += `<td style="padding: 1px 2px; max-width: 60px; overflow: hidden;" title="${stageNames[idx]}">${shortName}</td>`;
-                                    details += `<td style="text-align: right; padding: 1px 2px;">+${student.stageScores[idx].toFixed(1)}</td>`;
+                                    details += `<td style="text-align: right; padding: 1px 2px;">${formatStageScore(student.stageScores[idx], 1)}</td>`;
                                     details += `</tr>`;
                                 }
                                 details += `</table>`;
